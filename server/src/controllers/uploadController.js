@@ -1,5 +1,5 @@
 const { parseUploadedFile } = require("../services/fileParserService");
-const { buildInsights } = require("../services/summaryService");
+const { analyzeDocumentText } = require("../services/analysisService");
 const ApiError = require("../utils/apiError");
 
 async function handleUpload(req, res, next) {
@@ -9,7 +9,7 @@ async function handleUpload(req, res, next) {
     }
 
     const extractedText = await parseUploadedFile(req.file);
-    const insights = buildInsights(extractedText);
+    const insights = await analyzeDocumentText(extractedText);
 
     res.json({
       fileName: req.file.originalname,

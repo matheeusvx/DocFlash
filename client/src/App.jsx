@@ -41,13 +41,22 @@ function App() {
     <main className="app-shell">
       <section className="hero">
         <p className="eyebrow">DocFlash</p>
-        <h1>Transforme PDFs e TXTs em insights acionaveis.</h1>
+        <h1>Transforme PDFs e TXTs em insights acionáveis.</h1>
         <p className="hero-copy">
-          Envie um arquivo e receba um resumo objetivo, pontos-chave e proximas acoes em segundos.
+          Envie um documento e receba um resumo claro, pontos-chave e próximas ações em uma
+          interface simples, moderna e direta ao ponto.
         </p>
       </section>
 
       <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <p className="panel-label">Análise de documentos</p>
+            <h2>Faça upload do seu arquivo</h2>
+          </div>
+          <p className="panel-copy">Formatos aceitos: PDF e TXT com até 10 MB.</p>
+        </div>
+
         <UploadForm onUpload={handleUpload} loading={loading} />
         {error ? <p className="status error">{error}</p> : null}
         {loading ? <p className="status loading">Processando o documento...</p> : null}

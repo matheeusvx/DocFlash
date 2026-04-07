@@ -1,3 +1,14 @@
-node_modules/
-dist/
+# dependencias
+node_modules
+
+# build
+dist
+
+# env
+.env
+
+# logs
 *.log
+
+# sistema
+.DS_Store
