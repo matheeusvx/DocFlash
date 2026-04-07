@@ -1,26 +1,25 @@
-import multer from "multer";
+const path = require("path");
+const multer = require("multer");
 
-const storage = multer.memoryStorage();
-
-function fileFilter(_req, file, callback) {
-  const allowedMimeTypes = ["application/pdf", "text/plain"];
-
-  if (allowedMimeTypes.includes(file.mimetype)) {
-    callback(null, true);
-    return;
-  }
-
-  const error = new Error("Apenas arquivos PDF e TXT sao permitidos.");
-  error.statusCode = 400;
-  callback(error);
-}
+const ApiError = require("../utils/apiError");
 
 const upload = multer({
-  storage,
-  fileFilter,
+  storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 10 * 1024 * 1024
   },
+  fileFilter: (_req, file, cb) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+    const allowedExtensions = new Set([".pdf", ".txt"]);
+    const allowedMimeTypes = new Set(["application/pdf", "text/plain", ""]);
+
+    if (allowedExtensions.has(extension) && allowedMimeTypes.has(file.mimetype)) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new ApiError(400, "Envie apenas arquivos PDF ou TXT."));
+  }
 });
 
-export const uploadSingleDocument = upload.single("document");
+module.exports = upload;

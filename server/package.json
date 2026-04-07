@@ -1,19 +1,17 @@
 {
-  "name": "document-insights-server",
+  "name": "docflash-server",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
+  "description": "API para upload e processamento de arquivos PDF e TXT",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "multer": "^1.4.5-lts.1",
     "pdf-parse": "^1.1.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.10"
   }
 }

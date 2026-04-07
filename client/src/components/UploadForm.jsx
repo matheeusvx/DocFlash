@@ -1,68 +1,37 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 function UploadForm({ onUpload, loading }) {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [validationError, setValidationError] = useState("");
-  const fileInputRef = useRef(null);
 
-  function handleFileChange(event) {
-    const file = event.target.files?.[0] || null;
-    setValidationError("");
-    setSelectedFile(file);
-  }
-
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
     event.preventDefault();
 
-    if (!selectedFile) {
-      setValidationError("Selecione um arquivo PDF ou TXT antes de enviar.");
+    if (!selectedFile || loading) {
       return;
     }
 
-    await onUpload(selectedFile);
-  }
-
-  function clearSelection() {
-    setSelectedFile(null);
-    setValidationError("");
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    onUpload(selectedFile);
   }
 
   return (
-    <form className="panel upload-panel" onSubmit={handleSubmit}>
-      <div>
-        <p className="panel-label">Upload</p>
-        <h2>Envie seu documento</h2>
-        <p className="panel-copy">
-          Arquivos aceitos: PDF e TXT com ate 10 MB.
-        </p>
-      </div>
-
-      <label className="dropzone" htmlFor="document">
+    <form className="upload-form" onSubmit={handleSubmit}>
+      <label className="upload-input">
+        <span>Selecione um arquivo PDF ou TXT</span>
         <input
-          ref={fileInputRef}
-          id="document"
           type="file"
-          accept=".pdf,.txt"
-          onChange={handleFileChange}
+          accept=".pdf,.txt,application/pdf,text/plain"
+          onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
           disabled={loading}
         />
-        <span>{selectedFile ? selectedFile.name : "Clique para escolher o arquivo"}</span>
       </label>
 
-      {validationError ? <p className="status error">{validationError}</p> : null}
+      <button className="primary-button" type="submit" disabled={!selectedFile || loading}>
+        {loading ? "Enviando..." : "Analisar arquivo"}
+      </button>
 
-      <div className="actions-row">
-        <button type="submit" disabled={loading}>
-          {loading ? "Processando..." : "Enviar arquivo"}
-        </button>
-        <button type="button" className="ghost-button" onClick={clearSelection} disabled={loading}>
-          Limpar
-        </button>
-      </div>
+      <p className="helper-text">
+        Arquivos aceitos: PDF ou TXT com ate 10 MB.
+      </p>
     </form>
   );
 }

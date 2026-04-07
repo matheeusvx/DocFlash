@@ -1,59 +1,33 @@
-function ResultCards({ result, loading, error }) {
-  const hasResult = Boolean(result);
+function ResultCards({ result }) {
+  if (!result) {
+    return null;
+  }
 
   return (
-    <section className="panel results-panel">
-      <div>
-        <p className="panel-label">Resultado</p>
-        <h2>Insights estruturados</h2>
-      </div>
+    <section className="results-grid">
+      <article className="result-card summary-card">
+        <p className="card-label">Resumo</p>
+        <h2>{result.fileName}</h2>
+        <p>{result.summary}</p>
+      </article>
 
-      {loading ? (
-        <div className="empty-state">
-          <div className="loader" />
-          <p>Extraindo texto e montando os insights...</p>
-        </div>
-      ) : null}
+      <article className="result-card">
+        <p className="card-label">Pontos-chave</p>
+        <ul>
+          {result.keyPoints.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+        </ul>
+      </article>
 
-      {!loading && error ? <p className="status error">{error}</p> : null}
-
-      {!loading && !error && !hasResult ? (
-        <div className="empty-state">
-          <p>O JSON processado aparecera aqui depois do upload.</p>
-        </div>
-      ) : null}
-
-      {!loading && hasResult ? (
-        <div className="cards-stack">
-          <article className="result-card accent">
-            <span>Resumo</span>
-            <p>{result.summary}</p>
-          </article>
-
-          <article className="result-card">
-            <span>Pontos-chave</span>
-            <ul>
-              {result.keyPoints.map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="result-card">
-            <span>Proximas acoes</span>
-            <ul>
-              {result.nextActions.map((action) => (
-                <li key={action}>{action}</li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="result-card code-card">
-            <span>JSON bruto</span>
-            <pre>{JSON.stringify(result, null, 2)}</pre>
-          </article>
-        </div>
-      ) : null}
+      <article className="result-card">
+        <p className="card-label">Proximas acoes</p>
+        <ul>
+          {result.nextActions.map((action) => (
+            <li key={action}>{action}</li>
+          ))}
+        </ul>
+      </article>
     </section>
   );
 }

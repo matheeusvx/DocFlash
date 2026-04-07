@@ -1,15 +1,15 @@
-import cors from "cors";
-import express from "express";
-import uploadRoutes from "./routes/uploadRoutes.js";
-import { errorHandler } from "./middleware/errorHandler.js";
-import { notFound } from "./middleware/notFound.js";
+const express = require("express");
+const cors = require("cors");
+
+const uploadRoutes = require("./routes/uploadRoutes");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
-  }),
+    origin: process.env.CLIENT_URL || "http://localhost:5173"
+  })
 );
 app.use(express.json());
 
@@ -18,7 +18,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/upload", uploadRoutes);
-app.use(notFound);
+
 app.use(errorHandler);
 
-export default app;
+module.exports = app;

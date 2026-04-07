@@ -1,24 +1,27 @@
-import { extractTextFromFile } from "../services/fileParserService.js";
-import { buildInsightsFromText } from "../services/textInsightsService.js";
+const { parseUploadedFile } = require("../services/fileParserService");
+const { buildInsights } = require("../services/summaryService");
+const ApiError = require("../utils/apiError");
 
-export async function uploadDocument(req, res, next) {
+async function handleUpload(req, res, next) {
   try {
     if (!req.file) {
-      const error = new Error("Selecione um arquivo PDF ou TXT para enviar.");
-      error.statusCode = 400;
-      throw error;
+      throw new ApiError(400, "Selecione um arquivo PDF ou TXT.");
     }
 
-    const extractedText = await extractTextFromFile(req.file);
-    const insights = buildInsightsFromText(extractedText);
+    const extractedText = await parseUploadedFile(req.file);
+    const insights = buildInsights(extractedText);
 
     res.json({
       fileName: req.file.originalname,
       mimeType: req.file.mimetype,
-      extractedText,
-      ...insights,
+      extractedTextLength: extractedText.length,
+      ...insights
     });
   } catch (error) {
     next(error);
   }
 }
+
+module.exports = {
+  handleUpload
+};

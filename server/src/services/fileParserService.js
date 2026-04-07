@@ -1,34 +1,32 @@
-import pdf from "pdf-parse";
+const path = require("path");
+const pdfParse = require("pdf-parse");
 
-export async function extractTextFromFile(file) {
-  const mimeType = file.mimetype;
+const ApiError = require("../utils/apiError");
+const { normalizeWhitespace } = require("../utils/textHelpers");
 
-  if (mimeType === "application/pdf") {
-    const parsedPdf = await pdf(file.buffer);
-    const text = parsedPdf.text?.trim();
+async function parseUploadedFile(file) {
+  const extension = path.extname(file.originalname).toLowerCase();
 
-    if (!text) {
-      const error = new Error("Nao foi possivel extrair texto deste PDF.");
-      error.statusCode = 422;
-      throw error;
-    }
-
-    return text;
+  if (extension === ".pdf") {
+    const data = await pdfParse(file.buffer);
+    return validateExtractedText(normalizeWhitespace(data.text));
   }
 
-  if (mimeType === "text/plain") {
-    const text = file.buffer.toString("utf-8").trim();
-
-    if (!text) {
-      const error = new Error("O arquivo TXT esta vazio.");
-      error.statusCode = 422;
-      throw error;
-    }
-
-    return text;
+  if (extension === ".txt") {
+    return validateExtractedText(normalizeWhitespace(file.buffer.toString("utf-8")));
   }
 
-  const error = new Error("Formato de arquivo nao suportado. Envie PDF ou TXT.");
-  error.statusCode = 400;
-  throw error;
+  throw new ApiError(400, "Formato de arquivo nao suportado.");
 }
+
+function validateExtractedText(text) {
+  if (!text || text.trim().length === 0) {
+    throw new ApiError(422, "Nao foi possivel extrair texto util do arquivo enviado.");
+  }
+
+  return text;
+}
+
+module.exports = {
+  parseUploadedFile
+};

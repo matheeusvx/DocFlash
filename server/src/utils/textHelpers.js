@@ -1,145 +1,104 @@
-const ACTION_HINTS = [
-  "deve",
-  "precisa",
-  "proximo",
-  "action",
-  "follow-up",
-  "follow up",
-  "agendar",
-  "enviar",
-  "revisar",
-  "aprovar",
-  "implementar",
-  "ajustar",
-  "validar",
-];
-
-const STOPWORDS = new Set([
+const STOP_WORDS = new Set([
   "a",
   "as",
   "o",
   "os",
-  "e",
   "de",
   "da",
   "do",
   "das",
   "dos",
+  "e",
   "em",
+  "para",
+  "por",
+  "com",
   "um",
   "uma",
-  "para",
-  "com",
   "na",
   "no",
   "nas",
   "nos",
-  "por",
   "que",
   "se",
   "ao",
   "aos",
-  "como",
-  "mais",
-  "menos",
-  "muito",
-  "muita",
-  "muitas",
-  "muitos",
+  "ou",
   "the",
   "and",
+  "of",
+  "to",
   "for",
-  "with",
-  "this",
-  "that",
-  "from",
-  "are",
-  "was",
-  "were",
-  "will",
-  "have",
-  "has",
-  "had",
-  "uma",
-  "sobre",
-  "entre",
-  "apos",
+  "in",
+  "on",
+  "is",
+  "are"
 ]);
 
-export function normalizeText(text) {
+function normalizeWhitespace(text) {
   return text.replace(/\s+/g, " ").trim();
 }
 
-export function splitIntoSentences(text) {
+function splitIntoSentences(text) {
   return text
     .split(/(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length > 0);
+    .filter((sentence) => sentence.length > 30);
 }
 
-function summarizeByFrequency(text, limit = 2) {
-  const sentences = splitIntoSentences(text);
-  const tokens = text
+function extractTopKeywords(text) {
+  const counts = new Map();
+
+  text
     .toLowerCase()
-    .match(/[\p{L}\p{N}-]+/gu)
-    ?.filter((token) => token.length > 3 && !STOPWORDS.has(token)) || [];
+    .match(/[\p{L}0-9]{4,}/gu)
+    ?.forEach((word) => {
+      if (STOP_WORDS.has(word)) {
+        return;
+      }
 
-  const frequencies = tokens.reduce((accumulator, token) => {
-    accumulator[token] = (accumulator[token] || 0) + 1;
-    return accumulator;
-  }, {});
+      counts.set(word, (counts.get(word) || 0) + 1);
+    });
 
-  const rankedSentences = sentences
-    .map((sentence) => {
-      const score = (sentence.toLowerCase().match(/[\p{L}\p{N}-]+/gu) || []).reduce(
-        (sum, token) => sum + (frequencies[token] || 0),
-        0,
-      );
-
-      return { sentence, score };
-    })
-    .sort((left, right) => right.score - left.score)
-    .slice(0, limit)
-    .map((item) => item.sentence);
-
-  return rankedSentences.join(" ");
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([word]) => word);
 }
 
-export function buildSummary(sentences, text) {
-  if (sentences.length === 0) {
-    return "Nao foi possivel gerar resumo para o conteudo enviado.";
-  }
-
-  if (sentences.length <= 2) {
-    return sentences.join(" ");
-  }
-
-  return summarizeByFrequency(text, 2);
-}
-
-export function extractKeyPoints(sentences) {
-  if (sentences.length === 0) {
-    return ["Nenhum ponto-chave identificado."];
-  }
+function scoreSentences(sentences) {
+  const joinedText = sentences.join(" ");
+  const keywords = extractTopKeywords(joinedText);
 
   return sentences
-    .slice(0, 6)
-    .sort((left, right) => right.length - left.length)
-    .slice(0, 3);
+    .map((sentence) => {
+      const score = keywords.reduce((total, keyword) => {
+        const regex = new RegExp(`\\b${keyword}\\b`, "gi");
+        const matches = sentence.match(regex);
+        return total + (matches ? matches.length : 0);
+      }, 0);
+
+      return {
+        sentence,
+        score
+      };
+    })
+    .sort((a, b) => b.score - a.score || b.sentence.length - a.sentence.length)
+    .map((item) => item.sentence);
 }
 
-export function buildActionItems(sentences) {
-  const actions = sentences.filter((sentence) =>
-    ACTION_HINTS.some((hint) => sentence.toLowerCase().includes(hint)),
-  );
-
-  if (actions.length > 0) {
-    return actions.slice(0, 3);
+function truncateText(text, maxLength) {
+  if (text.length <= maxLength) {
+    return text;
   }
 
-  return [
-    "Revisar o conteudo extraido e validar se o resumo cobre os pontos principais.",
-    "Confirmar com o responsavel quais itens exigem acompanhamento.",
-    "Registrar as proximas etapas identificadas no documento.",
-  ];
+  return `${text.slice(0, maxLength - 3).trim()}...`;
 }
+
+module.exports = {
+  normalizeWhitespace,
+  splitIntoSentences,
+  extractTopKeywords,
+  scoreSentences,
+  truncateText
+};
