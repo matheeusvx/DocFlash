@@ -130,8 +130,8 @@ CLIENT_URL=http://localhost:5173
 
 ```
 cd server
-npm install
-npm start
+npm install ou npm.cmd install
+npm start ou npm.cmd start
 ```
 
 ---
@@ -140,8 +140,8 @@ npm start
 
 ```
 cd client
-npm install
-npm run dev
+npm install ou npm.cmd install
+npm run dev ou npm.cmd run dev
 ```
 
 ---
@@ -198,7 +198,7 @@ Todo o desenvolvimento foi supervisionado manualmente.
 
 ## 🎥 Apresentação em vídeo
 
-*(Adicionar link aqui)*
+(https://www.youtube.com/watch?v=BGbxRUBMQcs)
 
 ---
 
